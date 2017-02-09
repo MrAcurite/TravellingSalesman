@@ -1,0 +1,138 @@
+# -*- coding: utf-8 -*-
+"""
+The Insane Salesman
+
+Created on Sun Jan 29 14:34:58 2017
+
+Test, for a Travelling Salesman problem with n cities, compare genetic algorithms to brute force methods for a given time i
+
+@author: jonathan
+"""
+
+import math
+import random
+import matplotlib
+example = [[78, 780], [766, 44], [143, 487], [516, 500], [443, 507]]
+
+"""
+General things: These functions run the low-level arithmetic of the program
+"""
+
+#Returns a two dimensional list, giving the locations of n cities on a map of user defined width and height
+def generateMap(n, width = 1000, height = 1000):
+    listCities = []
+    for a in range(0, n):
+        listCities.append([(random.randint(0, width)), (random.randint(0, height))])
+    return listCities
+    
+#Returns the distance between two cities
+def distReturn(cityA, cityB):
+    distX = cityA[0] - cityB[0]
+    distY = cityA[1] - cityB[1]
+    return math.hypot(distX, distY)
+    
+#Returns the total distance travelled for a given order of cities
+def distTotal(listCities, orderCities):
+    totalDist = 0
+    for b in range(0, len(orderCities) - 1):
+        totalDist += distReturn(listCities[orderCities[b] - 1], listCities[orderCities[b + 1] - 1])
+    return totalDist
+    
+#Creates a .txt for recording a particular data set from the algorithms
+def writeDataToFile(name, data):
+    f = open(str(name) + ".txt", "w+")
+    for z in range(0, len(data)):
+        f.write(str(data[z]) + "\n")
+    f.close
+    
+"""
+These functions articulate the brute-force algorithm
+"""
+
+#Finds, for a number n and a place p, the pth ordering of non-repeating integers from 1 to n
+def wololo(n, p):
+    nums = []
+    newOrder = []
+    newp = p
+    for d in range(1, n + 1):
+        nums.append(d)
+    for e in range(1, n + 1):
+        nfact = math.factorial(n - e)
+        c = (int(math.ceil(newp / float(nfact))) - 1)
+        newp -= (c * nfact)
+        newOrder.append(nums[c])
+        nums.remove(nums[c])
+    return(newOrder)
+    
+#Executes the brute force algorithm, and puts the data into a .txt in the host folder
+def brute(dataName, numCities = 5, listCities = example):
+    data = []
+    for g in range(1, math.factorial(numCities) + 1):
+        data.append(distTotal(listCities, wololo(numCities, g)))
+    print(data)
+    writeDataToFile(dataName, data)
+    
+"""
+These functions articulate the genetic algorithm
+"""
+
+#Generate a random ordering of cities using wololo
+def newStrat(n):
+    return wololo(n, random.randint(1, math.factorial(n)))
+    
+#Creates a starter strat generation
+def newGen(genSize, n):
+    gen = []
+    for h in range(0, genSize):
+        gen.append(newStrat(n))
+    return(gen)
+    
+#Mutates a strat
+def mutate(strat, factor = 0.6):
+    nextStrat = strat
+    rands = []
+    amount = int(math.ceil(float(len(strat)) * factor))
+    for i in range(0, amount):
+        rands.append(random.randint(0, len(strat) - 1))
+    first = strat[rands[0]]
+    for j in range(0, amount - 1):
+        nextStrat[rands[j]] = strat[rands[j + 1]]
+    nextStrat[rands[amount - 1]] = first
+    return(nextStrat)       
+    
+#Returns the total distances for a given strat generation
+def evaluGen(gen, listCities):
+    scores = []
+    for k in range(0, len(gen)):
+        scores.append(distTotal(listCities, gen[k]))
+    return(scores)
+        
+#Takes one strat gen, evaluates it, sets the next generation to the best scoring strat, and mutates all but one of them
+def nextGen(gen, listCities, factor):
+    scores = evaluGen(gen, listCities)
+    bestScore = scores[0]
+    bestPos = 0
+    afterGen = []
+    for l in range(0, len(scores)):
+        if (scores[l] < bestScore):
+            bestScore = scores[l]
+            bestPos = l
+    bestStrat = gen[bestPos]
+    afterGen.append(bestStrat)
+    for m in range(1, len(gen)):
+        #afterGen.append(mutate(bestStrat, factor))
+        afterGen.append(newStrat(len(bestStrat)))
+    print(afterGen)
+    return([afterGen, scores])
+    
+#Executes the genetic algorithm, and puts the data in a .txt in the host folder
+def gene(dataName, factor = 0.6, genSize = 10, genCount = 100, numCities = 5, listCities = example):
+    data = []
+    currGen = newGen(genSize, numCities)
+    for o in range(0, genCount):
+        last = nextGen(currGen, listCities, factor)
+        data.append(last[1])
+        currGen = last[0]
+    writeDataToFile(dataName, data)
+    
+gene("GeneTest")
