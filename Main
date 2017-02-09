@@ -88,16 +88,17 @@ def newGen(genSize, n):
     return(gen)
     
 #Mutates a strat
-def mutate(strat, factor = 0.6):
-    nextStrat = strat
+def mutate(strat, factor = 0.4):
+    nextStrat = list(strat)
     rands = []
     amount = int(math.ceil(float(len(strat)) * factor))
+    sample = newStrat(len(strat))
     for i in range(0, amount):
-        rands.append(random.randint(0, len(strat) - 1))
-    first = strat[rands[0]]
+        rands.append(sample[i])
+    first = strat[rands[0] - 1]
     for j in range(0, amount - 1):
-        nextStrat[rands[j]] = strat[rands[j + 1]]
-    nextStrat[rands[amount - 1]] = first
+        nextStrat[rands[j] - 1] = strat[rands[j + 1] - 1]
+    nextStrat[rands[amount - 1] - 1] = first
     return(nextStrat)       
     
 #Returns the total distances for a given strat generation
@@ -120,9 +121,8 @@ def nextGen(gen, listCities, factor):
     bestStrat = gen[bestPos]
     afterGen.append(bestStrat)
     for m in range(1, len(gen)):
-        #afterGen.append(mutate(bestStrat, factor))
-        afterGen.append(newStrat(len(bestStrat)))
-    print(afterGen)
+        afterGen.append(mutate(bestStrat, factor))
+    print(gen)
     return([afterGen, scores])
     
 #Executes the genetic algorithm, and puts the data in a .txt in the host folder
