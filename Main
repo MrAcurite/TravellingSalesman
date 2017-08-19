@@ -55,9 +55,8 @@ def wololo(n, p):
     newOrder = []
     newp = p
     for e in range(1, n + 1):
-        nfact = math.factorial(n - e)
-        c = (int(math.ceil(newp / float(nfact))) - 1)
-        newp -= (c * nfact)
+        c = (int(math.ceil(newp / float(math.factorial(n - e)))) - 1)
+        newp -= (c * math.factorial(n - e))
         newOrder.append(nums[c])
         nums.remove(nums[c])
     return(newOrder)
